@@ -36,7 +36,8 @@ def generate_search_queries_prompt(question):
     """
 
     return f'Write 4 google search queries to search online that form an objective opinion from the following: "{question}"'\
-           f'You must respond with a list of strings in the following format: ["query 1", "query 2", "query 3", "query 4"]'
+           f'You must respond with a list of strings in the following JSON format: ["query 1", "query 2", "query 3", "query 4"].'\
+            ' Your response must be a well-formed JSON string.'
 
 
 def generate_resource_report_prompt(question, research_summary):
@@ -114,14 +115,14 @@ def auto_agent_instructions():
 
         examples:
         task: "should I invest in apple stocks?"
-        response: 
+        response:
         {
             "agent": "💰 Finance Agent",
             "agent_role_prompt: "You are a seasoned finance analyst AI assistant. Your primary goal is to compose comprehensive, astute, impartial, and methodically arranged financial reports based on provided data and trends."
         }
         task: "could reselling sneakers become profitable?"
-        response: 
-        { 
+        response:
+        {
             "agent":  "📈 Business Analyst Agent",
             "agent_role_prompt": "You are an experienced AI business analyst assistant. Your main objective is to produce comprehensive, insightful, impartial, and systematically structured business reports based on provided business data, market trends, and strategic analysis."
         }
