@@ -1,60 +1,37 @@
-import asyncio
+"""Run the agent to conduct research and write a report.
+"""
 import datetime
 
-from typing import List, Dict
-from fastapi import WebSocket
+from playwright.sync_api import sync_playwright
+
 from config import check_openai_api_key
 from agent.research_agent import ResearchAgent
+from log.log import get_logger
+
+LOGGER = get_logger(__name__)
 
 
-class WebSocketManager:
-    def __init__(self):
-        self.active_connections: List[WebSocket] = []
-        self.sender_tasks: Dict[WebSocket, asyncio.Task] = {}
-        self.message_queues: Dict[WebSocket, asyncio.Queue] = {}
-
-    async def start_sender(self, websocket: WebSocket):
-        queue = self.message_queues[websocket]
-        while True:
-            message = await queue.get()
-            if websocket in self.active_connections:
-                await websocket.send_text(message)
-            else:
-                break
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-        self.message_queues[websocket] = asyncio.Queue()
-        self.sender_tasks[websocket] = asyncio.create_task(self.start_sender(websocket))
-
-    async def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-        self.sender_tasks[websocket].cancel()
-        del self.sender_tasks[websocket]
-        del self.message_queues[websocket]
-
-    async def start_streaming(self, task, report_type, agent, agent_role_prompt, websocket):
-        report, path = await run_agent(task, report_type, agent, agent_role_prompt, websocket)
-        return report, path
-
-
-async def run_agent(task, report_type, agent, agent_role_prompt, websocket):
+def run_agent(task, report_type, agent, agent_role_prompt):
     check_openai_api_key()
 
     start_time = datetime.datetime.now()
 
-    # await websocket.send_json({"type": "logs", "output": f"Start time: {str(start_time)}\n\n"})
+    with sync_playwright() as context:
+        try:
+            browser = context.chromium.launch(headless=False)
+            page = browser.new_page()
 
-    assistant = ResearchAgent(task, agent, agent_role_prompt, websocket)
-    await assistant.conduct_research()
+            assistant = ResearchAgent(task, agent, agent_role_prompt, page)
+            assistant.conduct_research()
 
-    report, path = await assistant.write_report(report_type, websocket)
-
-    await websocket.send_json({"type": "path", "output": path})
+            report, path = assistant.write_report(report_type)
+            LOGGER.info("📝 Report written to: %s", path)
+        finally:
+            page.close()
+            browser.close()
 
     end_time = datetime.datetime.now()
-    await websocket.send_json({"type": "logs", "output": f"\nEnd time: {end_time}\n"})
-    await websocket.send_json({"type": "logs", "output": f"\nTotal run time: {end_time - start_time}\n"})
+    LOGGER.info("End time: %s", end_time)
+    LOGGER.info("Total run time: %s", end_time - start_time)
 
     return report, path

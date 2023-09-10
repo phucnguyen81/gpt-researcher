@@ -1,24 +1,22 @@
 from __future__ import annotations
-
 import json
-
-from fastapi import WebSocket
-import time
+from time import sleep as time_sleep
+from typing import Optional
 
 import openai
+from openai import OpenAIError
 from langchain.adapters import openai as lc_openai
 from colorama import Fore, Style
-from openai.error import APIError, RateLimitError
 
 from agent.prompts import auto_agent_instructions
 from config import Config
+from log.log import get_logger
 
+LOGGER = get_logger(__name__)
 CFG = Config()
 
 openai.api_key = CFG.openai_api_key
 
-from typing import Optional
-import logging
 
 def create_chat_completion(
     messages: list,  # type: ignore
@@ -26,7 +24,6 @@ def create_chat_completion(
     temperature: float = CFG.temperature,
     max_tokens: Optional[int] = None,
     stream: Optional[bool] = False,
-    websocket: WebSocket | None = None,
 ) -> str:
     """Create a chat completion using the OpenAI API
     Args:
@@ -44,25 +41,25 @@ def create_chat_completion(
         raise ValueError("Model cannot be None")
     if max_tokens is not None and max_tokens > 8001:
         raise ValueError(f"Max tokens cannot be more than 8001, but got {max_tokens}")
-    if stream and websocket is None:
-        raise ValueError("Websocket cannot be None when stream is True")
 
     # create response
-    for attempt in range(10):  # maximum of 10 attempts
+    try:
         response = send_chat_completion_request(
-            messages, model, temperature, max_tokens, stream, websocket
+            messages, model, temperature, max_tokens, stream
         )
         return response
-
-    logging.error("Failed to get response from OpenAI API")
-    raise RuntimeError("Failed to get response from OpenAI API")
+    except OpenAIError as error:
+        msg = "Failed to get response from OpenAI API"
+        LOGGER.error(msg)
+        raise RuntimeError(msg) from error
 
 
 def send_chat_completion_request(
-    messages, model, temperature, max_tokens, stream, websocket
+    messages, model, temperature, max_tokens, stream
 ):
+    time_sleep(30) # crude way to stay within rate limit
     if not stream:
-        result = lc_openai.ChatCompletion.create(
+        result: any = lc_openai.ChatCompletion.create(
             model=model, # Change model here to use different models
             messages=messages,
             temperature=temperature,
@@ -71,13 +68,13 @@ def send_chat_completion_request(
         )
         return result["choices"][0]["message"]["content"]
     else:
-        return stream_response(model, messages, temperature, max_tokens, websocket)
+        return stream_response(model, messages, temperature, max_tokens)
 
 
-async def stream_response(model, messages, temperature, max_tokens, websocket):
+def stream_response(model, messages, temperature, max_tokens):
     paragraph = ""
     response = ""
-    print(f"streaming response...")
+    LOGGER.info("Streaming response...")
 
     for chunk in lc_openai.ChatCompletion.create(
             model=model,
@@ -92,9 +89,10 @@ async def stream_response(model, messages, temperature, max_tokens, websocket):
             response += content
             paragraph += content
             if "\n" in paragraph:
-                await websocket.send_json({"type": "report", "output": paragraph})
+                LOGGER.info("Response: %s", paragraph)
                 paragraph = ""
-    print(f"streaming response complete")
+
+    LOGGER.info("streaming response complete")
     return response
 
 

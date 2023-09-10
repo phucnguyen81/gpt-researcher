@@ -29,15 +29,20 @@ def generate_report_prompt(question, research_summary):
             "You MUST determine your own concrete and valid opinion based on the information found. Do NOT deter to general and meaningless conclusions." \
            "Write all source urls at the end of the report in apa format"
 
+
 def generate_search_queries_prompt(question):
     """ Generates the search queries prompt for the given question.
     Args: question (str): The question to generate the search queries prompt for
     Returns: str: The search queries prompt for the given question
     """
-
-    return f'Write 4 google search queries to search online that form an objective opinion from the following: "{question}"'\
-           f'You must respond with a list of strings in the following JSON format: ["query 1", "query 2", "query 3", "query 4"].'\
-            ' Your response must be a well-formed JSON string.'
+    return f"""\
+Write 4 google search queries to search online that form an objective opinion from the following: "{question}".
+You MUST respond with 4 lines, each line is a query as follows:
+query_1
+query_2
+query_3
+query_4
+"""
 
 
 def generate_resource_report_prompt(question, research_summary):

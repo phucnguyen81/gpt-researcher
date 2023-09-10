@@ -1,9 +1,15 @@
-#Ignore env containing secrets
+# Ignore env containing secrets
 .env
-#Ignore Virtual Env
+
+# Ignore Virtual Env
 env/
 *-venv/
-#Ignore generated outputs
+
+# Ignore generated outputs (reports)
 outputs/
-#Ignore pycache
+
+# Ignore python cache
 **/__pycache__/
+
+# Ignore logs
+*.log

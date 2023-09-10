@@ -1,13 +1,10 @@
 """Text processing functions"""
-import urllib
-from typing import Dict, Generator, Optional
-import string
-
-from selenium.webdriver.remote.webdriver import WebDriver
-
-from config import Config
-from agent.llm_utils import create_chat_completion
+from typing import Dict, Generator
 import os
+import urllib
+
+from agent.llm_utils import create_chat_completion
+from config import Config
 from md2pdf.core import md2pdf
 
 CFG = Config()
@@ -44,7 +41,7 @@ def split_text(text: str, max_length: int = 8192) -> Generator[str, None, None]:
 
 
 def summarize_text(
-    url: str, text: str, question: str, driver: Optional[WebDriver] = None
+    url: str, text: str, question: str, page
 ) -> str:
     """Summarize text using the OpenAI API
 
@@ -52,7 +49,7 @@ def summarize_text(
         url (str): The url of the text
         text (str): The text to summarize
         question (str): The question to ask the model
-        driver (WebDriver): The webdriver to use to scroll the page
+        page (Page): The page to scroll
 
     Returns:
         str: The summary of the text
@@ -65,8 +62,8 @@ def summarize_text(
     scroll_ratio = 1 / len(chunks)
 
     for i, chunk in enumerate(chunks):
-        if driver:
-            scroll_to_percentage(driver, scroll_ratio * i)
+        if page:
+            scroll_to_percentage(page, scroll_ratio * i)
 
         memory_to_add = f"Source: {url}\n" f"Raw content part#{i + 1}: {chunk}"
 
@@ -93,7 +90,7 @@ def summarize_text(
     )
 
 
-def scroll_to_percentage(driver: WebDriver, ratio: float) -> None:
+def scroll_to_percentage(page, ratio: float) -> None:
     """Scroll to a percentage of the page
 
     Args:
@@ -105,7 +102,7 @@ def scroll_to_percentage(driver: WebDriver, ratio: float) -> None:
     """
     if ratio < 0 or ratio > 1:
         raise ValueError("Percentage should be between 0 and 1")
-    driver.execute_script(f"window.scrollTo(0, document.body.scrollHeight * {ratio});")
+    page.evaluate(f"window.scrollTo(0, document.body.scrollHeight * {ratio});")
 
 
 def create_message(chunk: str, question: str) -> Dict[str, str]:
@@ -136,7 +133,7 @@ def write_to_file(filename: str, text: str) -> None:
     with open(filename, "w") as file:
         file.write(text)
 
-async def write_md_to_pdf(task: str, directory_name: str, text: str) -> None:
+def write_md_to_pdf(task: str, directory_name: str, text: str) -> None:
     file_path = f"./outputs/{directory_name}/{task}"
     write_to_file(f"{file_path}.md", text)
     md_to_pdf(f"{file_path}.md", f"{file_path}.pdf")

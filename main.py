@@ -69,7 +69,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     agent_role_prompt = None
 
                 await websocket.send_json({
-                    "type": "logs", "output": f"Initiated an Agent: {agent}"
+                    "type": "logs", "output": f"Initiated an Agent lala: {agent}"
                 })
                 if task and report_type and agent:
                     await manager.start_streaming(
@@ -84,5 +84,4 @@ async def websocket_endpoint(websocket: WebSocket):
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8000)
