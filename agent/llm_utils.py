@@ -57,6 +57,7 @@ def create_chat_completion(
 def send_chat_completion_request(
     messages, model, temperature, max_tokens, stream
 ):
+    # FIXME: find a better way to stay within rate limit
     time_sleep(30) # crude way to stay within rate limit
     if not stream:
         result: any = lc_openai.ChatCompletion.create(
@@ -77,19 +78,19 @@ def stream_response(model, messages, temperature, max_tokens):
     LOGGER.info("Streaming response...")
 
     for chunk in lc_openai.ChatCompletion.create(
-            model=model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            provider="ChatOpenAI",
-            stream=True,
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        provider="ChatOpenAI",
+        stream=True,
     ):
         content = chunk["choices"][0].get("delta", {}).get("content")
         if content is not None:
             response += content
             paragraph += content
             if "\n" in paragraph:
-                LOGGER.info("Response: %s", paragraph)
+                LOGGER.debug("Response: %s", paragraph)
                 paragraph = ""
 
     LOGGER.info("streaming response complete")

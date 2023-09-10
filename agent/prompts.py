@@ -17,8 +17,9 @@ def generate_agent_role_prompt(agent):
 
 def generate_report_prompt(question, research_summary):
     """ Generates the report prompt for the given question and research summary.
-    Args: question (str): The question to generate the report prompt for
-            research_summary (str): The research summary to generate the report prompt for
+    Args:
+        question (str): The question to generate the report prompt for
+        research_summary (str): The research summary to generate the report prompt for
     Returns: str: The report prompt for the given question and research summary
     """
 
@@ -36,12 +37,8 @@ def generate_search_queries_prompt(question):
     Returns: str: The search queries prompt for the given question
     """
     return f"""\
-Write 4 google search queries to search online that form an objective opinion from the following: "{question}".
-You MUST respond with 4 lines, each line is a query as follows:
-query_1
-query_2
-query_3
-query_4
+Write 4 google search queries to search online that form an objective opinion from the following: "{question}". \
+Format the answer as a single well-formed JSON string as follows: ["query 1", "query 2", "query 3", "query 4"]
 """
 
 
@@ -77,13 +74,14 @@ def generate_outline_report_prompt(question, research_summary):
            ' The research report should be detailed, informative, in-depth, and a minimum of 1,200 words.' \
            ' Use appropriate Markdown syntax to format the outline and ensure readability.'
 
+
 def generate_concepts_prompt(question, research_summary):
     """ Generates the concepts prompt for the given question.
-    Args: question (str): The question to generate the concepts prompt for
-            research_summary (str): The research summary to generate the concepts prompt for
+    Args:
+        question (str): The question to generate the concepts prompt for
+        research_summary (str): The research summary to generate the concepts prompt for
     Returns: str: The concepts prompt for the given question
     """
-
     return f'"""{research_summary}""" Using the above information, generate a list of 5 main concepts to learn for a research report'\
            f' on the following question or topic: "{question}". The outline should provide a well-structured framework'\
            'You must respond with a list of strings in the following format: ["concepts 1", "concepts 2", "concepts 3", "concepts 4, concepts 5"]'
@@ -98,13 +96,16 @@ def generate_lesson_prompt(concept):
         str: The lesson prompt for the given concept.
     """
 
-    prompt = f'generate a comprehensive lesson about {concept} in Markdown syntax. This should include the definition'\
-    f'of {concept}, its historical background and development, its applications or uses in different'\
-    f'fields, and notable events or facts related to {concept}.'
+    return f"""Generate a comprehensive lesson about {concept} in Markdown syntax. \
+This should include the definition of {concept}, its historical background \
+and development, its applications or uses in different fields, \
+and notable events or facts related to {concept}."""
 
-    return prompt
 
 def get_report_by_type(report_type):
+    """ Returns a mapping from report type to report prompt. A report prompt
+    is a function that takes a question and its research summary and returns
+    a prompt to help generate a report. """
     report_type_mapping = {
         'research_report': generate_report_prompt,
         'resource_report': generate_resource_report_prompt,
@@ -112,29 +113,34 @@ def get_report_by_type(report_type):
     }
     return report_type_mapping[report_type]
 
-def auto_agent_instructions():
-    return """
-        This task involves researching a given topic, regardless of its complexity or the availability of a definitive answer. The research is conducted by a specific agent, defined by its type and role, with each agent requiring distinct instructions.
-        Agent
-        The agent is determined by the field of the topic and the specific name of the agent that could be utilized to research the topic provided. Agents are categorized by their area of expertise, and each agent type is associated with a corresponding emoji.
 
-        examples:
-        task: "should I invest in apple stocks?"
-        response:
-        {
-            "agent": "💰 Finance Agent",
-            "agent_role_prompt: "You are a seasoned finance analyst AI assistant. Your primary goal is to compose comprehensive, astute, impartial, and methodically arranged financial reports based on provided data and trends."
-        }
-        task: "could reselling sneakers become profitable?"
-        response:
-        {
-            "agent":  "📈 Business Analyst Agent",
-            "agent_role_prompt": "You are an experienced AI business analyst assistant. Your main objective is to produce comprehensive, insightful, impartial, and systematically structured business reports based on provided business data, market trends, and strategic analysis."
-        }
-        task: "what are the most interesting sites in Tel Aviv?"
-        response:
-        {
-            "agent:  "🌍 Travel Agent",
-            "agent_role_prompt": "You are a world-travelled AI tour guide assistant. Your main purpose is to draft engaging, insightful, unbiased, and well-structured travel reports on given locations, including history, attractions, and cultural insights."
-        }
+def auto_agent_instructions():
     """
+    Returns a prompt to generate agent and agent prompt for a research topic.
+    """
+
+    return """
+This task involves researching a given topic, regardless of its complexity or the availability of a definitive answer. The research is conducted by a specific agent, defined by its type and role, with each agent requiring distinct instructions.
+Agent
+The agent is determined by the field of the topic and the specific name of the agent that could be utilized to research the topic provided. Agents are categorized by their area of expertise, and each agent type is associated with a corresponding emoji.
+
+examples:
+task: "should I invest in apple stocks?"
+response:
+{
+    "agent": "💰 Finance Agent",
+    "agent_role_prompt: "You are a seasoned finance analyst AI assistant. Your primary goal is to compose comprehensive, astute, impartial, and methodically arranged financial reports based on provided data and trends."
+}
+task: "could reselling sneakers become profitable?"
+response:
+{
+    "agent":  "📈 Business Analyst Agent",
+    "agent_role_prompt": "You are an experienced AI business analyst assistant. Your main objective is to produce comprehensive, insightful, impartial, and systematically structured business reports based on provided business data, market trends, and strategic analysis."
+}
+task: "what are the most interesting sites in Tel Aviv?"
+response:
+{
+    "agent:  "🌍 Travel Agent",
+    "agent_role_prompt": "You are a world-travelled AI tour guide assistant. Your main purpose is to draft engaging, insightful, unbiased, and well-structured travel reports on given locations, including history, attractions, and cultural insights."
+}
+"""

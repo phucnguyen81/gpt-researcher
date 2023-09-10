@@ -53,11 +53,15 @@ class ResearchAgent:
         if not self.research_summary:
             search_queries = self.create_search_queries()
             for query in search_queries:
+                LOGGER.info("Running research for: %s", query)
                 research_result = self.run_search_summary(query)
                 self.research_summary += f"{research_result}\n\n"
 
         LOGGER.info(
-            "Total research words: %s", len(self.research_summary.split(' '))
+            "Research summary: %s ...", self.research_summary[:100]
+        )
+        LOGGER.info(
+            "Total research words: %s", len(self.research_summary.split())
         )
 
         return self.research_summary
@@ -67,19 +71,19 @@ class ResearchAgent:
         Args: None
         Returns: list[str]: The search queries for the given question
         """
-        queries = self.call_agent(prompts.generate_search_queries_prompt(self.question))
-        LOGGER.info("Conducting research based on the following queries: %s...", queries)
-        return StringIO(queries).readlines()
+        search_queries_prompt = prompts.generate_search_queries_prompt(
+            self.question
+        )
+        queries = self.call_agent(search_queries_prompt)
+        LOGGER.info("Generated search queries: %s", queries)
+        return json.loads(queries)
 
     def run_search_summary(self, query):
         """ Runs the search summary for the given query.
         Args: query (str): The query to run the search summary for
         Returns: str: The search summary for the given query
         """
-        LOGGER.info("🔎 Running research for '%s'...", query)
-
-        responses = self.sync_search(query)
-
+        responses = self.scrape(query)
         result = "\n".join(responses)
         clean_query =  re.sub(r'\W+', '_', query)
         query_file = f"./outputs/{self.directory_name}/research-{clean_query}.txt"
@@ -87,11 +91,22 @@ class ResearchAgent:
         write_to_file(query_file, result)
         return result
 
-    def sync_search(self, query):
-        search_results = json.loads(web_search(query))
-        new_search_urls = self.get_new_urls([url.get("href") for url in search_results])
+    def scrape(self, query):
+        """ Returns a list of texts extracted from scraping the web for the
+        given query.
+        """
+        search_results = web_search(query)
+        if not search_results:
+            LOGGER.warning("No search results found for: %s", query)
+            return []
 
-        LOGGER.info("Browsing the following sites for relevant information: %s...", new_search_urls)
+        new_search_urls = self.get_new_urls(search_results)
+
+        LOGGER.info(
+            "Browsing the following sites for relevant information on %s:\n%s",
+            query,
+            '\n'.join(new_search_urls)
+        )
 
         # collect the results
         responses = [

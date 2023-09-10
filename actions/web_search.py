@@ -1,25 +1,27 @@
+""" Programatic internet searches """
 from __future__ import annotations
-import json
+
+import itertools
+
 from duckduckgo_search import DDGS
 
+from log.log import get_logger
+
+LOGGER = get_logger(__name__)
 ddgs = DDGS()
 
-def web_search(query: str, num_results: int = 4) -> str:
-    """Useful for general internet search queries."""
-    print("Searching with query {0}...".format(query))
-    search_results = []
-    if not query:
-        return json.dumps(search_results)
 
-    results = ddgs.text(query)
-    if not results:
-        return json.dumps(search_results)
-
-    total_added = 0
-    for j in results:
-        search_results.append(j)
-        total_added += 1
-        if total_added >= num_results:
-            break
-
-    return json.dumps(search_results, ensure_ascii=False, indent=4)
+def web_search(query: str, num_results: int = 4) -> list[str]:
+    """
+    Runs an internet search and returns the result list of urls.
+    """
+    LOGGER.info("Searching the internet with query: %s ...", query)
+    results = []
+    if query:
+        results = list(itertools.islice(ddgs.text(query), num_results))
+    urls = []
+    for result in results:
+        url = result.get("href")
+        assert url, f"No href in search result: {result}"
+        urls.append(url)
+    return urls

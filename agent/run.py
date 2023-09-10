@@ -28,7 +28,7 @@ def run_agent(task, report_type, agent, agent_role_prompt):
             assistant.conduct_research()
 
             report, path = assistant.write_report(report_type)
-            LOGGER.info("📝 Report written to: %s", path)
+            LOGGER.info("Report written to: %s", path)
         finally:
             page.close()
             browser.close()
