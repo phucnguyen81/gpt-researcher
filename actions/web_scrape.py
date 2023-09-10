@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 
 from config import Config
 from log.log import get_logger
-import processing.text as summary
+from processing.text import summarize_text
 
 LOGGER = get_logger(__name__)
 FILE_DIR = Path(__file__).parent.parent
@@ -28,7 +28,7 @@ def sync_browse(url: str, question: str, page) -> str:
     try:
         text = scrape_text_with_selenium(page, url)
         add_header(page)
-        summary_text = summary.summarize_text(url, text, question, page)
+        summary_text = summarize_text(text, question, page)
 
         LOGGER.info("📝 Information gathered from url %s: %s", url, summary_text)
         return f"Information gathered from url {url}: {summary_text}"
@@ -61,24 +61,24 @@ def scrape_text_with_selenium(page, url: str) -> str:
     return text
 
 
-def get_text(soup):
-    """Get the text from the soup
-
+def get_text(tag):
+    """ Get the significant text from a tag. Here significant text is the text
+    from headings and paragraphs.
     Args:
-        soup (BeautifulSoup): The soup to get the text from
-
+        tag (Tag): The tag to get the text from
     Returns:
-        str: The text from the soup
+        str: The significant text from the tag
     """
     text = ""
     tags = ['h1', 'h2', 'h3', 'h4', 'h5', 'p']
-    for element in soup.find_all(tags):  # Find all the <p> elements
+    for element in tag.find_all(tags):  # Find all the <p> elements
         text += element.text + "\n\n"
     return text
 
 
 def add_header(page) -> None:
-    """Add a header to the website
+    """Add a header to the website. The header shows an overlay over the page
+    telling the user that the page is being processed.
     """
     with open(f"{FILE_DIR}/js/overlay.js", "r", encoding="utf-8") as jsfile:
         page.evaluate(jsfile.read())

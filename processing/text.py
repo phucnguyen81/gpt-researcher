@@ -3,9 +3,10 @@ from typing import Dict, Generator
 import os
 import urllib
 
+from md2pdf.core import md2pdf
+
 from agent.llm_utils import create_chat_completion
 from config import Config
-from md2pdf.core import md2pdf
 
 CFG = Config()
 
@@ -40,13 +41,10 @@ def split_text(text: str, max_length: int = 8192) -> Generator[str, None, None]:
         yield "\n".join(current_chunk)
 
 
-def summarize_text(
-    url: str, text: str, question: str, page
-) -> str:
+def summarize_text(text: str, question: str, page) -> str:
     """Summarize text using the OpenAI API
 
     Args:
-        url (str): The url of the text
         text (str): The text to summarize
         question (str): The question to ask the model
         page (Page): The page to scroll
@@ -61,25 +59,16 @@ def summarize_text(
     chunks = list(split_text(text))
     scroll_ratio = 1 / len(chunks)
 
-    for i, chunk in enumerate(chunks):
+    for idx, chunk in enumerate(chunks):
         if page:
-            scroll_to_percentage(page, scroll_ratio * i)
-
-        memory_to_add = f"Source: {url}\n" f"Raw content part#{i + 1}: {chunk}"
-
-        #MEMORY.add_documents([Document(page_content=memory_to_add)])
+            scroll_to_percentage(page, scroll_ratio * idx)
 
         messages = [create_message(chunk, question)]
-
         summary = create_chat_completion(
             model=CFG.fast_llm_model,
             messages=messages,
         )
         summaries.append(summary)
-        memory_to_add = f"Source: {url}\n" f"Content summary part#{i + 1}: {summary}"
-
-        #MEMORY.add_documents([Document(page_content=memory_to_add)])
-
 
     combined_summary = "\n".join(summaries)
     messages = [create_message(combined_summary, question)]
@@ -91,12 +80,10 @@ def summarize_text(
 
 
 def scroll_to_percentage(page, ratio: float) -> None:
-    """Scroll to a percentage of the page
-
+    """ Scroll to a percentage of the given page
     Args:
-        driver (WebDriver): The webdriver to use
-        ratio (float): The percentage to scroll to
-
+        page (Page): the page to scroll
+        ratio (float): the percentage to scroll to
     Raises:
         ValueError: If the ratio is not between 0 and 1
     """
@@ -106,12 +93,10 @@ def scroll_to_percentage(page, ratio: float) -> None:
 
 
 def create_message(chunk: str, question: str) -> Dict[str, str]:
-    """Create a message for the chat completion
-
+    """ Create a message to answer a question or to summerize it.
     Args:
         chunk (str): The chunk of text to summarize
         question (str): The question to answer
-
     Returns:
         Dict[str, str]: The message to send to the chat completion
     """
@@ -123,17 +108,21 @@ def create_message(chunk: str, question: str) -> Dict[str, str]:
         "Include all factual information, numbers, stats etc if available.",
     }
 
-def write_to_file(filename: str, text: str) -> None:
-    """Write text to a file
 
+def write_to_file(filename: str, text: str) -> None:
+    """ Write text to a file
     Args:
         text (str): The text to write
         filename (str): The filename to write to
     """
-    with open(filename, "w") as file:
+    with open(filename, "w", encoding="utf-8") as file:
         file.write(text)
 
-def write_md_to_pdf(task: str, directory_name: str, text: str) -> None:
+
+def write_md_to_pdf(task: str, directory_name: str, text: str) -> str:
+    """ Write the task file in markdown to a pdf file. Return the path to
+    the pdf file that has been encoded to be safely used in a url.
+    """
     file_path = f"./outputs/{directory_name}/{task}"
     write_to_file(f"{file_path}.md", text)
     md_to_pdf(f"{file_path}.md", f"{file_path}.pdf")
@@ -143,20 +132,27 @@ def write_md_to_pdf(task: str, directory_name: str, text: str) -> None:
 
     return encoded_file_path
 
-def read_txt_files(directory):
-    all_text = ''
 
+def read_txt_files(directory) -> str:
+    """ Return a string read from all text files in the given directory
+    """
+    all_text = ''
     for filename in os.listdir(directory):
         if filename.endswith('.txt'):
-            with open(os.path.join(directory, filename), 'r') as file:
+            with open(
+                os.path.join(directory, filename), 'r', encoding='utf-8'
+            ) as file:
                 all_text += file.read() + '\n'
-
     return all_text
 
 
 def md_to_pdf(input_file, output_file):
-    md2pdf(output_file,
-           md_content=None,
-           md_file_path=input_file,
-           css_file_path=None,
-           base_url=None)
+    """ Convert markdown input file to pdf output file
+    """
+    md2pdf(
+        output_file,
+        md_content=None,
+        md_file_path=input_file,
+        css_file_path=None,
+        base_url=None,
+    )

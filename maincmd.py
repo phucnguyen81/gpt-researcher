@@ -6,7 +6,7 @@ from log.log import get_logger
 LOGGER = get_logger(__name__)
 
 # Set task and report_type
-TASK = "Django web framework"
+TASK = "Summarize text with AI"
 REPORT_TYPE = "research_report"
 
 # Choose an agent
