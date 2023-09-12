@@ -6,7 +6,7 @@ from log.log import get_logger
 LOGGER = get_logger(__name__)
 
 # Set task and report_type
-TASK = "What is UTC time?"
+TASK = "How to treat Autism?"
 REPORT_TYPE = "research_report"
 
 # Choose an agent

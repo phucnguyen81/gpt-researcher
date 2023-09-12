@@ -38,6 +38,7 @@ class ResearchAgent:
         self.visited_urls = set()
         self.research_summary = ""
         self.directory_name = uuid.uuid4()
+        os.makedirs("./outputs", exist_ok=True) # TODO: move to config
         self.dir_path = os.path.dirname(f"./outputs/{self.directory_name}/")
         self.page = page
 

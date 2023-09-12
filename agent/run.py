@@ -1,6 +1,7 @@
 """Run the agent to conduct research and write a report.
 """
 import datetime
+from datetime import timedelta
 
 from playwright.sync_api import sync_playwright
 
@@ -35,6 +36,9 @@ def run_agent(task, report_type, agent, agent_role_prompt):
 
     end_time = datetime.datetime.now()
     LOGGER.info("End time: %s", end_time)
-    LOGGER.info("Total run time: %s", end_time - start_time)
+    total_time = timedelta(
+        seconds=int((end_time - start_time).total_seconds())
+    )
+    LOGGER.info("Total run time: %s", total_time)
 
     return report, path
