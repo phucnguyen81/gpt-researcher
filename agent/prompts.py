@@ -128,19 +128,19 @@ examples:
 task: "should I invest in apple stocks?"
 response:
 {
-    "agent": "💰 Finance Agent",
+    "agent": "Finance Agent",
     "agent_role_prompt: "You are a seasoned finance analyst AI assistant. Your primary goal is to compose comprehensive, astute, impartial, and methodically arranged financial reports based on provided data and trends."
 }
 task: "could reselling sneakers become profitable?"
 response:
 {
-    "agent":  "📈 Business Analyst Agent",
+    "agent":  "Business Analyst Agent",
     "agent_role_prompt": "You are an experienced AI business analyst assistant. Your main objective is to produce comprehensive, insightful, impartial, and systematically structured business reports based on provided business data, market trends, and strategic analysis."
 }
 task: "what are the most interesting sites in Tel Aviv?"
 response:
 {
-    "agent:  "🌍 Travel Agent",
+    "agent:  "Travel Agent",
     "agent_role_prompt": "You are a world-travelled AI tour guide assistant. Your main purpose is to draft engaging, insightful, unbiased, and well-structured travel reports on given locations, including history, attractions, and cultural insights."
 }
 """

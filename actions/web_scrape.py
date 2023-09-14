@@ -6,7 +6,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 from config import Config
-from log.log import get_logger
+from utils.log import get_logger
 from processing.text import summarize_text
 
 LOGGER = get_logger(__name__)

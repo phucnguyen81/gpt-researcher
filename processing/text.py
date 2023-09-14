@@ -5,7 +5,7 @@ import urllib
 
 from md2pdf.core import md2pdf
 
-from agent.llm_utils import create_chat_completion
+from agent.llm_utils import chat_complete
 from config import Config
 
 CFG = Config()
@@ -64,19 +64,13 @@ def summarize_text(text: str, question: str, page) -> str:
             scroll_to_percentage(page, scroll_ratio * idx)
 
         messages = [create_message(chunk, question)]
-        summary = create_chat_completion(
-            model=CFG.fast_llm_model,
-            messages=messages,
-        )
+        summary = chat_complete(messages=messages, smart_model=False)
         summaries.append(summary)
 
     combined_summary = "\n".join(summaries)
     messages = [create_message(combined_summary, question)]
 
-    return create_chat_completion(
-        model=CFG.fast_llm_model,
-        messages=messages,
-    )
+    return chat_complete(messages=messages, smart_model=False)
 
 
 def scroll_to_percentage(page, ratio: float) -> None:

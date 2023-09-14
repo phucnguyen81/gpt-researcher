@@ -7,7 +7,7 @@ from playwright.sync_api import sync_playwright
 
 from config import check_openai_api_key
 from agent.research_agent import ResearchAgent
-from log.log import get_logger
+from utils.log import get_logger
 
 LOGGER = get_logger(__name__)
 

@@ -1,12 +1,12 @@
 """ Command line version of the main app. """
 from agent.llm_utils import choose_agent
 from agent.run import run_agent
-from log.log import get_logger
+from utils.log import get_logger
 
 LOGGER = get_logger(__name__)
 
 # Set task and report_type
-TASK = "How to treat Autism?"
+TASK = "OpenAI applications and features"
 REPORT_TYPE = "research_report"
 
 # Choose an agent

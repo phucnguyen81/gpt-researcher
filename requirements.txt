@@ -10,10 +10,11 @@ python-dotenv~=1.0.0
 pyyaml==6.0.1
 selenium==4.11.2
 webdriver-manager==4.0.0
-flask
-uvicorn
-pydantic
-fastapi
-python-multipart
+Flask==2.3.2
+uvicorn==0.23.2
+pydantic==1.10.12
+fastapi==0.101.1
+python-multipart==0.0.6
 markdown
 langchain==0.0.263
+tenacity==8.2.3

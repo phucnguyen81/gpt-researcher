@@ -2,7 +2,6 @@
 Research assistant class that handles the research process
 for a given question.
 """
-from io import StringIO
 import json
 import uuid
 import os
@@ -10,15 +9,15 @@ import re
 
 from actions.web_scrape import sync_browse
 from actions.web_search import web_search
-from processing.text import \
-    write_to_file, \
-    create_chat_completion, \
-    read_txt_files, \
-    write_md_to_pdf
-from config import Config
+from agent.llm_utils import chat_complete
 from agent import prompts
-
-from log.log import get_logger
+from config import Config
+from processing.text import (
+    write_to_file,
+    read_txt_files,
+    write_md_to_pdf,
+)
+from utils.log import get_logger
 
 LOGGER = get_logger(__name__)
 CFG = Config()
@@ -140,8 +139,7 @@ class ResearchAgent:
             report_type, self.question
         )
         answer = self.call_agent(
-            report_type_func(self.question, self.research_summary),
-            stream=True
+            action=report_type_func(self.question, self.research_summary)
         )
 
         path = write_md_to_pdf(report_type, self.directory_name, answer)
@@ -154,7 +152,7 @@ class ResearchAgent:
         concepts = self.create_concepts()
         for concept in concepts:
             lesson_prompt = prompts.generate_lesson_prompt(concept)
-            answer = self.call_agent(lesson_prompt, stream=True)
+            answer = self.call_agent(lesson_prompt)
             write_md_to_pdf("Lesson", self.directory_name, answer)
 
     def create_concepts(self):
@@ -169,7 +167,7 @@ class ResearchAgent:
 
         return json.loads(result)
 
-    def call_agent(self, action, stream=False):
+    def call_agent(self, action):
         """ Gets the agent's response given an action to perform. The action
         should match the agent's role for a better response.
 
@@ -183,9 +181,5 @@ class ResearchAgent:
             "role": "user",
             "content": action,
         }]
-        answer = create_chat_completion(
-            model=CFG.smart_llm_model,
-            messages=messages,
-            stream=stream,
-        )
+        answer = chat_complete(messages=messages, smart_model=True)
         return answer

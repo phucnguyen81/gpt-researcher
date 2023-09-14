@@ -5,7 +5,7 @@ import itertools
 
 from duckduckgo_search import DDGS
 
-from log.log import get_logger
+from utils.log import get_logger
 
 LOGGER = get_logger(__name__)
 ddgs = DDGS()
