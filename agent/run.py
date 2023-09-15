@@ -14,11 +14,12 @@ LOGGER = get_logger(__name__)
 
 def run_agent(task, report_type, agent, agent_role_prompt):
     """ Run the research agent to generate a report for the given task.
-    The report is automatically written to a file in the outputs directory.
+    The reports are written to a sub-directory of the outputs directory.
     """
     check_openai_api_key()
 
     start_time = datetime.datetime.now()
+    LOGGER.info("Start time: %s", start_time)
 
     with sync_playwright() as context:
         try:

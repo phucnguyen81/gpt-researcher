@@ -7,7 +7,7 @@ import uuid
 import os
 import re
 
-from actions.web_scrape import sync_browse
+from actions.web_scrape import summarize_page
 from actions.web_search import web_search
 from agent.llm_utils import chat_complete
 from agent import prompts
@@ -110,7 +110,7 @@ class ResearchAgent:
 
         # collect the results
         responses = [
-            sync_browse(url, query, self.page) for url in new_search_urls
+            summarize_page(url, query, self.page) for url in new_search_urls
         ]
         return responses
 
