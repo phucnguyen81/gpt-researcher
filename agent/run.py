@@ -37,6 +37,41 @@ def run_agent(task, report_type, agent, agent_role_prompt):
 
     end_time = datetime.datetime.now()
     LOGGER.info("End time: %s", end_time)
+
+    total_time = timedelta(
+        seconds=int((end_time - start_time).total_seconds())
+    )
+    LOGGER.info("Total run time: %s", total_time)
+
+    return report, path
+
+
+def run_search(task, report_type, agent, agent_role_prompt):
+    """ Run the search agent to generate a report for the given task.
+    The reports are written to a sub-directory of the outputs directory.
+    """
+    check_openai_api_key()
+
+    start_time = datetime.datetime.now()
+    LOGGER.info("Start time: %s", start_time)
+
+    with sync_playwright() as context:
+        try:
+            browser = context.chromium.launch(headless=False)
+            page = browser.new_page()
+
+            assistant = ResearchAgent(task, agent, agent_role_prompt, page)
+            assistant.conduct_search()
+
+            report, path = assistant.write_report(report_type)
+            LOGGER.info("Report written to: %s", path)
+        finally:
+            page.close()
+            browser.close()
+
+    end_time = datetime.datetime.now()
+    LOGGER.info("End time: %s", end_time)
+
     total_time = timedelta(
         seconds=int((end_time - start_time).total_seconds())
     )

@@ -6,7 +6,7 @@ from utils.log import get_logger
 LOGGER = get_logger(__name__)
 
 # Set task and report_type
-TASK = "Gloo Edge API Gateway"
+TASK = "How to update client on long running server process"
 REPORT_TYPE = "research_report"
 
 # Choose an agent

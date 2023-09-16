@@ -66,6 +66,31 @@ class ResearchAgent:
 
         return self.research_summary
 
+    def conduct_search(self) -> str:
+        """ Returns the search results if they are already available,
+        otherwise conducts the search and returns the result.
+        """
+        self.research_summary = (
+            read_txt_files(self.dir_path)
+            if os.path.isdir(self.dir_path) else ""
+        )
+
+        if not self.research_summary:
+            LOGGER.info("Running search for: %s", self.question)
+            research_result = self.run_search_summary(
+                self.question, num_results=10
+            )
+            self.research_summary += f"{research_result}\n\n"
+
+        LOGGER.info(
+            "Research summary: %s ...", self.research_summary[:100]
+        )
+        LOGGER.info(
+            "Total research words: %s", len(self.research_summary.split())
+        )
+
+        return self.research_summary
+
     def create_search_queries(self) -> list[str]:
         """ Creates the search queries for the given question.
         Args: None
@@ -78,12 +103,12 @@ class ResearchAgent:
         LOGGER.info("Generated search queries: %s", queries)
         return json.loads(queries)
 
-    def run_search_summary(self, query):
+    def run_search_summary(self, query, num_results=4):
         """ Runs the search summary for the given query.
         Args: query (str): The query to run the search summary for
         Returns: str: The search summary for the given query
         """
-        responses = self.scrape(query)
+        responses = self.scrape(query, num_results=num_results)
         result = "\n".join(responses)
         clean_query =  re.sub(r'\W+', '_', query)
         query_file = f"./outputs/{self.directory_name}/research-{clean_query}.txt"
@@ -91,11 +116,11 @@ class ResearchAgent:
         write_to_file(query_file, result)
         return result
 
-    def scrape(self, query):
+    def scrape(self, query, num_results=4):
         """ Returns a list of texts extracted from scraping the web for the
         given query.
         """
-        search_results = web_search(query)
+        search_results = web_search(query, num_results=num_results)
         if not search_results:
             LOGGER.warning("No search results found for: %s", query)
             return []

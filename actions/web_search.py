@@ -25,3 +25,15 @@ def web_search(query: str, num_results: int = 4) -> list[str]:
         assert url, f"No href in search result: {result}"
         urls.append(url)
     return urls
+
+
+def main(query: str):
+    """ Returns web urls matching a query """
+    results = web_search(query)
+    print(f"Results for query '{query}':")
+    for result in results:
+        print(result)
+
+
+if __name__ == "__main__":
+    main(query="What is the best way to learn programming?")

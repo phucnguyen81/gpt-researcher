@@ -36,9 +36,17 @@ def generate_search_queries_prompt(question):
     Args: question (str): The question to generate the search queries prompt for
     Returns: str: The search queries prompt for the given question
     """
-    return f"""\
-Write 4 google search queries to search online that form an objective opinion from the following: "{question}". \
-Format the answer as a single well-formed JSON string as follows: ["query 1", "query 2", "query 3", "query 4"]
+    return f"""QUESTION:
+Write 4 google search queries to search online that form an objective opinion from the following: "{question}".
+Provide the answer in JSON form. Reply with only the answer in JSON form and include no other commentary.
+
+EXAMPLE:
+```json
+["query 1", "query 2", "query 3", "query 4"]
+```
+
+ANSWER:
+```json
 """
 
 
